@@ -1,60 +1,44 @@
-import { useState, useEffect, useCallback } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
+import { useState, useEffect } from "react";
 import "./App.css";
+import Search from "./Components/Search";
+import GalleryGrid from "./Components/GalleryGrid";
+import { getImages, searchImages } from "./Services/api";
 
 function App() {
   const [photos, setPhotos] = useState([]);
+  const [page, setPage] = useState(1);
+  const [searchPage, setSearchPage] = useState(1);
+  const [error, setError] = useState(false);
+  const [query, setQuery] = useState("");
+
 
   useEffect(() => {
     getPhotos();
   }, []);
 
-  let page = 1;
-  const getPhotos = useCallback(() => {
+  const getPhotos = async () => {
+    try {
+      const data = await getImages({query,page})
+      setPhotos((prev) => [...prev, ...data]);
+      setPage((prev) => prev + 1);
+      
+    } catch (error) {
+      setError(true);
+    }
+  };
 
-    fetch(`https://api.unsplash.com/photos?w=300&h=300&page=${page}`, {
-      headers: {
-        Authorization: `Client-ID ${process.env.REACT_APP_CLIENT_ID}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setPhotos((prev) => [...prev, ...data]);
-        page = page + 1
-      });
-  }, [page]);
+  const searchPhotos = async () => {
+    try {
+      const data = await searchImages({query, searchPage})
+      setPhotos((prev) => [...prev, ...data?.results]);
+      setSearchPage((prev) => prev + 1);
+    } catch (error) {}
+  };
 
   return (
     <div className="App">
-      <div className="search-filter">
-        <div className="search">
-          <input type="text" />
-          <button>Search</button>
-        </div>
-
-        <div className="filter">
-          <select>
-            <option>Page size</option>
-            <option>category</option>
-            <option>tags</option>
-          </select>
-        </div>
-      </div>
-
-      <InfiniteScroll
-        dataLength={photos.length}
-        next={getPhotos}
-        hasMore={true}
-        loader={<h4>Loading...</h4>}
-      >
-        <div className="grid">
-          {photos.map((p) => (
-            <div className="image">
-              <img src={p?.urls?.thumb} alt="random pic" loading="lazy" />
-            </div>
-          ))}
-        </div>
-      </InfiniteScroll>
+      <Search searchPhotos={searchPhotos} setPhotos={setPhotos} query={query} setQuery={setQuery} />
+      <GalleryGrid photos={photos} error={error} getPhotos={getPhotos} />
     </div>
   );
 }
