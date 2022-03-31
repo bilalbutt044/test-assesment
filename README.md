@@ -1,3 +1,6 @@
+# Environment Variable
+`Client-ID`  is required to run API call. to do that  create a `.env` file in root directory of folder and create a variable named `REACT_APP_CLIENT_ID` and assign `client-id` value to this. 
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
