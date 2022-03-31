@@ -1,32 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import "./App.css";
 
 function App() {
   const [photos, setPhotos] = useState([]);
-  const [page, setPage] = useState(1)
-
 
   useEffect(() => {
     getPhotos();
   }, []);
 
-  const getPhotos = () => {
+  let page = 1;
+  const getPhotos = useCallback(() => {
 
     fetch(`https://api.unsplash.com/photos?w=300&h=300&page=${page}`, {
       headers: {
         Authorization: `Client-ID ${process.env.REACT_APP_CLIENT_ID}`,
       },
-      
     })
       .then((res) => res.json())
       .then((data) => {
-
-
-        setPhotos((prev) =>  [...prev, ...data]);
-        setPage(prev => prev + 1)
+        setPhotos((prev) => [...prev, ...data]);
+        page = page + 1
       });
-  };
+  }, [page]);
 
   return (
     <div className="App">
